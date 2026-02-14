@@ -90,6 +90,10 @@ class Book(models.Model):
         Переопределяем save, чтобы автоматически обновлять статус
         на основе доступного количества
         """
+        # Если available_quantity не задано, устанавливаем равным quantity
+        if self.available_quantity is None:
+            self.available_quantity = self.quantity
+
         if self.available_quantity <= 0:
             self.status = self.StatusChoices.BORROWED
         elif self.available_quantity > 0 and self.status != self.StatusChoices.UNDER_REPAIR:

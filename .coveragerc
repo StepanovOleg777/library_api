@@ -1,0 +1,22 @@
+[run]
+source = books,config
+omit =
+    */migrations/*
+    */tests.py
+    */apps.py
+    */admin.py
+    */__init__.py
+    manage.py
+    config/asgi.py
+    config/wsgi.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __str__
+    def get_absolute_url
+    raise NotImplementedError
+    if __name__ == .__main__.
+    self.assert
+    class Meta
+    @admin.register
