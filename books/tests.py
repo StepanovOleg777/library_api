@@ -17,7 +17,7 @@ class AuthorModelTest(TestCase):
             last_name="Толстой",
             middle_name="Николаевич",
             birth_date="1828-09-09",
-            biography="Великий русский писатель"
+            biography="Великий русский писатель",
         )
 
     def test_author_creation(self):
@@ -52,10 +52,7 @@ class BookModelTest(TestCase):
     """Тесты для модели Book"""
 
     def setUp(self):
-        self.author = Author.objects.create(
-            first_name="Лев",
-            last_name="Толстой"
-        )
+        self.author = Author.objects.create(first_name="Лев", last_name="Толстой")
         self.book = Book.objects.create(
             title="Война и мир",
             isbn="9783161484100",
@@ -64,7 +61,7 @@ class BookModelTest(TestCase):
             pages=1300,
             description="Роман-эпопея",
             quantity=5,
-            available_quantity=5
+            available_quantity=5,
         )
         self.book.authors.add(self.author)
 
@@ -113,9 +110,10 @@ class BookModelTest(TestCase):
             publisher="Тест",
             pages=-5,
             quantity=5,
-            available_quantity=5
+            available_quantity=5,
         )
         from django.core.exceptions import ValidationError
+
         with self.assertRaises(ValidationError):
             book.full_clean()
 
@@ -129,7 +127,7 @@ class BookBorrowModelTest(TestCase):
             password="testpass123",
             library_card_number="LIB0001",
             first_name="Иван",
-            last_name="Иванов"
+            last_name="Иванов",
         )
         self.author = Author.objects.create(first_name="Лев", last_name="Толстой")
         self.book = Book.objects.create(
@@ -139,16 +137,14 @@ class BookBorrowModelTest(TestCase):
             publisher="Русский вестник",
             pages=1300,
             quantity=5,
-            available_quantity=5
+            available_quantity=5,
         )
         self.book.authors.add(self.author)
 
     def test_borrow_creation(self):
         """Тест создания выдачи"""
         borrow = BookBorrow.objects.create(
-            user=self.user,
-            book=self.book,
-            due_date=date.today() + timedelta(days=14)
+            user=self.user, book=self.book, due_date=date.today() + timedelta(days=14)
         )
         self.assertEqual(borrow.user, self.user)
         self.assertEqual(borrow.book, self.book)
@@ -167,15 +163,13 @@ class BookBorrowModelTest(TestCase):
             BookBorrow.objects.create(
                 user=self.user,
                 book=self.book,
-                due_date=date.today() + timedelta(days=14)
+                due_date=date.today() + timedelta(days=14),
             )
 
     def test_return_book(self):
         """Тест возврата книги"""
         borrow = BookBorrow.objects.create(
-            user=self.user,
-            book=self.book,
-            due_date=date.today() + timedelta(days=14)
+            user=self.user, book=self.book, due_date=date.today() + timedelta(days=14)
         )
 
         borrow.is_returned = True
@@ -193,9 +187,7 @@ class BookBorrowModelTest(TestCase):
     def test_overdue_books(self):
         """Тест просроченных книг"""
         borrow = BookBorrow.objects.create(
-            user=self.user,
-            book=self.book,
-            due_date=date.today() - timedelta(days=5)
+            user=self.user, book=self.book, due_date=date.today() - timedelta(days=5)
         )
 
         self.assertFalse(borrow.is_returned)
@@ -204,9 +196,7 @@ class BookBorrowModelTest(TestCase):
     def test_borrow_str_method(self):
         """Тест строкового представления выдачи"""
         borrow = BookBorrow.objects.create(
-            user=self.user,
-            book=self.book,
-            due_date=date.today() + timedelta(days=14)
+            user=self.user, book=self.book, due_date=date.today() + timedelta(days=14)
         )
         self.assertIn("Иванов", str(borrow))
         self.assertIn("Война и мир", str(borrow))
@@ -214,24 +204,18 @@ class BookBorrowModelTest(TestCase):
     def test_multiple_borrows(self):
         """Тест нескольких выдач одной книги"""
         user2 = User.objects.create_user(
-            username="testuser2",
-            password="testpass123",
-            library_card_number="LIB0002"
+            username="testuser2", password="testpass123", library_card_number="LIB0002"
         )
 
-        borrow1 = BookBorrow.objects.create(
-            user=self.user,
-            book=self.book,
-            due_date=date.today() + timedelta(days=14)
+        BookBorrow.objects.create(
+            user=self.user, book=self.book, due_date=date.today() + timedelta(days=14)
         )
 
         self.book.refresh_from_db()
         self.assertEqual(self.book.available_quantity, 4)
 
-        borrow2 = BookBorrow.objects.create(
-            user=user2,
-            book=self.book,
-            due_date=date.today() + timedelta(days=14)
+        BookBorrow.objects.create(
+            user=user2, book=self.book, due_date=date.today() + timedelta(days=14)
         )
 
         self.book.refresh_from_db()
@@ -248,12 +232,10 @@ class BookAPITest(APITestCase):
             password="testpass123",
             library_card_number="LIB0001",
             first_name="Иван",
-            last_name="Иванов"
+            last_name="Иванов",
         )
         self.admin = User.objects.create_superuser(
-            username="admin",
-            password="admin123",
-            library_card_number="LIB0000"
+            username="admin", password="admin123", library_card_number="LIB0000"
         )
         self.author = Author.objects.create(first_name="Лев", last_name="Толстой")
         self.book = Book.objects.create(
@@ -263,85 +245,86 @@ class BookAPITest(APITestCase):
             publisher="Русский вестник",
             pages=1300,
             quantity=5,
-            available_quantity=5
+            available_quantity=5,
         )
         self.book.authors.add(self.author)
 
-        response = self.client.post('/api/token/', {
-            'username': 'testuser',
-            'password': 'testpass123'
-        })
-        self.token = response.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        response = self.client.post(
+            "/api/token/", {"username": "testuser", "password": "testpass123"}
+        )
+        self.token = response.data.get("access")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
     def test_get_books_list(self):
         """Тест получения списка книг"""
-        response = self.client.get('/api/books/')
+        response = self.client.get("/api/books/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
     def test_get_book_detail(self):
         """Тест получения деталей книги"""
-        response = self.client.get(f'/api/books/{self.book.id}/')
+        response = self.client.get(f"/api/books/{self.book.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['title'], "Война и мир")
-
+        self.assertEqual(response.data["title"], "Война и мир")
 
     def test_get_author_detail(self):
         """Тест получения деталей автора"""
-        response = self.client.get(f'/api/authors/{self.author.id}/')
+        response = self.client.get(f"/api/authors/{self.author.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['last_name'], "Толстой")
+        self.assertEqual(response.data["last_name"], "Толстой")
 
     def test_create_book_unauthorized(self):
         """Тест создания книги без прав админа"""
-        response = self.client.post('/api/books/', {
-            'title': 'Новая книга',
-            'isbn': '1234567890123',
-            'publication_year': 2024,
-            'publisher': 'Тест',
-            'pages': 100,
-            'quantity': 3,
-            'authors': [self.author.id]
-        })
+        response = self.client.post(
+            "/api/books/",
+            {
+                "title": "Новая книга",
+                "isbn": "1234567890123",
+                "publication_year": 2024,
+                "publisher": "Тест",
+                "pages": 100,
+                "quantity": 3,
+                "authors": [self.author.id],
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_book_as_admin(self):
         """Тест создания книги админом"""
         # Авторизуемся как админ
-        response = self.client.post('/api/token/', {
-            'username': 'admin',
-            'password': 'admin123'
-        })
-        admin_token = response.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
+        response = self.client.post(
+            "/api/token/", {"username": "admin", "password": "admin123"}
+        )
+        admin_token = response.data.get("access")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {admin_token}")
 
-        response = self.client.post('/api/books/', {
-            'title': 'Новая книга',
-            'isbn': '1234567890123',
-            'publication_year': 2024,
-            'publisher': 'Тест',
-            'pages': 100,
-            'quantity': 3,
-            'authors': [self.author.id]
-        })
+        response = self.client.post(
+            "/api/books/",
+            {
+                "title": "Новая книга",
+                "isbn": "1234567890123",
+                "publication_year": 2024,
+                "publisher": "Тест",
+                "pages": 100,
+                "quantity": 3,
+                "authors": [self.author.id],
+            },
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Book.objects.count(), 2)
 
     def test_create_author_as_admin(self):
         """Тест создания автора админом"""
-        response = self.client.post('/api/token/', {
-            'username': 'admin',
-            'password': 'admin123'
-        })
-        admin_token = response.data.get('access')
-        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {admin_token}')
+        response = self.client.post(
+            "/api/token/", {"username": "admin", "password": "admin123"}
+        )
+        admin_token = response.data.get("access")
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {admin_token}")
 
-        response = self.client.post('/api/authors/', {
-            'first_name': 'Антон',
-            'last_name': 'Чехов',
-            'birth_date': '1860-01-29'
-        })
+        response = self.client.post(
+            "/api/authors/",
+            {"first_name": "Антон", "last_name": "Чехов", "birth_date": "1860-01-29"},
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Author.objects.count(), 2)
 
@@ -350,24 +333,22 @@ class BookAPITest(APITestCase):
         self.book.available_quantity = 0
         self.book.save()
 
-        response = self.client.post('/api/borrows/', {
-            'user': self.user.id,
-            'book': self.book.id
-        })
+        response = self.client.post(
+            "/api/borrows/", {"user": self.user.id, "book": self.book.id}
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_users_list(self):
         """Тест получения списка пользователей"""
-        response = self.client.get('/api/users/')
+        response = self.client.get("/api/users/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)  # user + admin
+        self.assertEqual(response.data["count"], 2)  # user + admin
 
     def test_get_user_detail(self):
         """Тест получения деталей пользователя"""
-        response = self.client.get(f'/api/users/{self.user.id}/')
+        response = self.client.get(f"/api/users/{self.user.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['username'], 'testuser')
-
+        self.assertEqual(response.data["username"], "testuser")
 
 
 class ViewCoverageTests(TestCase):
@@ -379,12 +360,10 @@ class ViewCoverageTests(TestCase):
 
         self.factory = APIRequestFactory()
         self.user = User.objects.create_user(
-            username="viewuser",
-            password="test123",
-            library_card_number="LIB8888"
+            username="viewuser", password="test123", library_card_number="LIB8888"
         )
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = self.user
 
         self.author_view = AuthorViewSet()
@@ -424,10 +403,7 @@ class SerializerDetailedTests(TestCase):
     """Детальные тесты сериализаторов"""
 
     def setUp(self):
-        self.author = Author.objects.create(
-            first_name="Сергей",
-            last_name="Есенин"
-        )
+        self.author = Author.objects.create(first_name="Сергей", last_name="Есенин")
         self.book = Book.objects.create(
             title="Стихи",
             isbn="5555555555555",
@@ -435,69 +411,68 @@ class SerializerDetailedTests(TestCase):
             publisher="Поэзия",
             pages=200,
             quantity=2,
-            available_quantity=2
+            available_quantity=2,
         )
         self.book.authors.add(self.author)
         self.user = User.objects.create_user(
-            username="serializeruser",
-            password="test123",
-            library_card_number="LIB7777"
+            username="serializeruser", password="test123", library_card_number="LIB7777"
         )
 
     def test_book_serializer_fields(self):
         """Тест всех полей BookSerializer"""
         from .serializers import BookSerializer
+
         serializer = BookSerializer(self.book)
         data = serializer.data
-        self.assertIn('id', data)
-        self.assertIn('title', data)
-        self.assertIn('authors', data)
-        self.assertIn('authors_display', data)
-        self.assertIn('isbn', data)
-        self.assertIn('publication_year', data)
-        self.assertIn('publisher', data)
-        self.assertIn('pages', data)
-        self.assertIn('quantity', data)
-        self.assertIn('available_quantity', data)
-        self.assertIn('status', data)
+        self.assertIn("id", data)
+        self.assertIn("title", data)
+        self.assertIn("authors", data)
+        self.assertIn("authors_display", data)
+        self.assertIn("isbn", data)
+        self.assertIn("publication_year", data)
+        self.assertIn("publisher", data)
+        self.assertIn("pages", data)
+        self.assertIn("quantity", data)
+        self.assertIn("available_quantity", data)
+        self.assertIn("status", data)
 
     def test_author_serializer_fields(self):
         """Тест всех полей AuthorSerializer"""
         from .serializers import AuthorSerializer
+
         serializer = AuthorSerializer(self.author)
         data = serializer.data
-        self.assertIn('id', data)
-        self.assertIn('first_name', data)
-        self.assertIn('last_name', data)
-        self.assertIn('middle_name', data)
-        self.assertIn('birth_date', data)
-        self.assertIn('biography', data)
+        self.assertIn("id", data)
+        self.assertIn("first_name", data)
+        self.assertIn("last_name", data)
+        self.assertIn("middle_name", data)
+        self.assertIn("birth_date", data)
+        self.assertIn("biography", data)
 
     def test_user_serializer_create(self):
         """Тест создания пользователя через сериализатор"""
         from .serializers import UserSerializer
+
         data = {
-            'username': 'testcreate',
-            'password': 'complexpass123',
-            'email': 'test@create.com',
-            'first_name': 'Тест',
-            'last_name': 'Создатель',
-            'phone': '+71234567890'
+            "username": "testcreate",
+            "password": "complexpass123",
+            "email": "test@create.com",
+            "first_name": "Тест",
+            "last_name": "Создатель",
+            "phone": "+71234567890",
         }
         serializer = UserSerializer(data=data)
         self.assertTrue(serializer.is_valid())
         user = serializer.save()
         self.assertIsNotNone(user.library_card_number)
-        self.assertTrue(user.library_card_number.startswith('LIB'))
+        self.assertTrue(user.library_card_number.startswith("LIB"))
 
     def test_user_serializer_validation(self):
         """Тест валидации UserSerializer"""
         from .serializers import UserSerializer
+
         # Неполные данные
-        data = {
-            'username': 'test',
-            'password': '123'
-        }
+        data = {"username": "test", "password": "123"}
         serializer = UserSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
@@ -510,9 +485,9 @@ class SerializerDetailedTests(TestCase):
         self.book.save()
 
         data = {
-            'user': self.user.id,
-            'book': self.book.id,
-            'due_date': date.today() + timedelta(days=14)
+            "user": self.user.id,
+            "book": self.book.id,
+            "due_date": date.today() + timedelta(days=14),
         }
         serializer = BookBorrowSerializer(data=data)
         is_valid = serializer.is_valid()
@@ -524,20 +499,16 @@ class SerializerDetailedTests(TestCase):
         """Тест невалидных данных BookBorrowSerializer"""
         from .serializers import BookBorrowSerializer
 
-        data = {
-            'user': 99999,
-            'book': 99999
-        }
+        data = {"user": 99999, "book": 99999}
         serializer = BookBorrowSerializer(data=data)
         self.assertFalse(serializer.is_valid())
 
     def test_book_return_serializer(self):
         """Тест сериализатора возврата"""
         from .serializers import BookReturnSerializer
+
         borrow = BookBorrow.objects.create(
-            user=self.user,
-            book=self.book,
-            due_date=date.today() + timedelta(days=14)
+            user=self.user, book=self.book, due_date=date.today() + timedelta(days=14)
         )
         serializer = BookReturnSerializer(borrow, data={}, partial=True)
         self.assertTrue(serializer.is_valid())
@@ -554,11 +525,11 @@ class PermissionTests(TestCase):
 
         factory = APIRequestFactory()
 
-        request = Request(factory.get('/'))
+        request = Request(factory.get("/"))
         permission = IsAdminOrReadOnly()
         self.assertTrue(permission.has_permission(request, None))
 
-        request = Request(factory.post('/'))
+        request = Request(factory.post("/"))
         self.assertFalse(permission.has_permission(request, None))
 
 
@@ -567,7 +538,9 @@ class FilterTests(TestCase):
 
     def setUp(self):
         self.author1 = Author.objects.create(first_name="Лев", last_name="Толстой")
-        self.author2 = Author.objects.create(first_name="Фёдор", last_name="Достоевский")
+        self.author2 = Author.objects.create(
+            first_name="Фёдор", last_name="Достоевский"
+        )
 
         self.book1 = Book.objects.create(
             title="Война и мир",
@@ -576,7 +549,7 @@ class FilterTests(TestCase):
             publisher="А",
             pages=1300,
             quantity=5,
-            available_quantity=5
+            available_quantity=5,
         )
         self.book1.authors.add(self.author1)
 
@@ -587,7 +560,7 @@ class FilterTests(TestCase):
             publisher="Б",
             pages=500,
             quantity=3,
-            available_quantity=3
+            available_quantity=3,
         )
         self.book2.authors.add(self.author2)
 

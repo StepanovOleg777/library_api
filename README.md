@@ -186,7 +186,7 @@ python manage.py test books
 coverage run --source='books' manage.py test books
 coverage report
 ```
-### Текущее покрытие кода: 82%
+### Текущее покрытие кода: 79%
 
 ## Структура проекта
 ```
