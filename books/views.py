@@ -121,13 +121,11 @@ class BookBorrowViewSet(viewsets.ModelViewSet):
         """Эндпоинт для возврата книги"""
         borrow = self.get_object()
 
-        # Проверяем, что книга еще не возвращена
         if borrow.is_returned:
             return Response(
                 {"error": "Книга уже возвращена"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Проверяем права (админ или владелец)
         if not request.user.is_staff and borrow.user != request.user:
             return Response(
                 {"error": "Нет прав на возврат чужой книги"},

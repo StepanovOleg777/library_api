@@ -25,17 +25,15 @@ class UserSerializer(serializers.ModelSerializer):
             "password": {"write_only": True},
             "library_card_number": {
                 "read_only": True
-            },  # Будем генерировать автоматически
+            },
         }
 
     def create(self, validated_data):
         """Хешируем пароль при создании"""
         validated_data["password"] = make_password(validated_data["password"])
-        # Простая генерация номера (в реальности сложнее)
         if not validated_data.get("library_card_number"):
             last_user = User.objects.order_by("id").last()
             if last_user and last_user.library_card_number:
-                # Извлекаем число из номера вида "LIB0001"
                 try:
                     last_num = int(last_user.library_card_number.replace("LIB", "")) + 1
                     validated_data["library_card_number"] = f"LIB{last_num:04d}"
@@ -111,12 +109,11 @@ class BookBorrowSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         """Проверяем, что книга доступна"""
-        if not self.instance:  # Только при создании
+        if not self.instance:
             book = data.get("book")
             if book and book.available_quantity <= 0:
                 raise serializers.ValidationError("Эта книга недоступна для выдачи")
 
-            # Устанавливаем дату возврата через 14 дней по умолчанию
             if not data.get("due_date"):
                 data["due_date"] = date.today() + timedelta(days=14)
         return data
@@ -142,7 +139,6 @@ class BookReturnSerializer(serializers.ModelSerializer):
         self.instance.return_date = date.today()
         self.instance.save()
 
-        # Увеличиваем доступное количество
         book = self.instance.book
         book.available_quantity += 1
         book.save()

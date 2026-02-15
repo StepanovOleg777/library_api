@@ -1,4 +1,3 @@
-# books/admin.py
 from django.contrib import admin
 from .models import User, Author, Book, BookBorrow
 
@@ -35,7 +34,7 @@ class BookAdmin(admin.ModelAdmin):
     )
     search_fields = ("title", "isbn")
     list_filter = ("status", "publication_year", "publisher")
-    filter_horizontal = ("authors",)  # Удобный виджет для выбора авторов
+    filter_horizontal = ("authors",)
 
     def get_authors(self, obj):
         return ", ".join([str(author) for author in obj.authors.all()])
@@ -55,4 +54,4 @@ class BookBorrowAdmin(admin.ModelAdmin):
     )
     list_filter = ("is_returned", "borrow_date", "due_date")
     search_fields = ("user__username", "user__last_name", "book__title")
-    readonly_fields = ("borrow_date",)  # Дату выдачи не меняем руками
+    readonly_fields = ("borrow_date",)

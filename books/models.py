@@ -5,8 +5,6 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from datetime import datetime, date
 
 
-# Модель пользователя (читателя)
-# Мы расширяем стандартную модель User, добавив номер читательского билета
 class User(AbstractUser):
     """
     Модель пользователя (читателя).
@@ -102,7 +100,6 @@ class Book(models.Model):
         Переопределяем save, чтобы автоматически обновлять статус
         на основе доступного количества
         """
-        # Если available_quantity не задано, устанавливаем равным quantity
         if self.available_quantity is None:
             self.available_quantity = self.quantity
 

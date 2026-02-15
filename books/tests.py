@@ -291,7 +291,6 @@ class BookAPITest(APITestCase):
 
     def test_create_book_as_admin(self):
         """Тест создания книги админом"""
-        # Авторизуемся как админ
         response = self.client.post(
             "/api/token/", {"username": "admin", "password": "admin123"}
         )
