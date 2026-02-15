@@ -11,7 +11,7 @@ API для управления библиотекой. Позволяет уп�
 - **JWT аутентификация** (djangorestframework-simplejwt)
 - **Docker & Docker Compose**
 - **Swagger / OpenAPI** (drf-yasg)
-- **Тестирование**: unittest + coverage (82% покрытия)
+- **Тестирование**: unittest + coverage (79% покрытия)
 
 ## Функционал
 
